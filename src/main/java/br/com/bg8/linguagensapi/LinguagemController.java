@@ -1,24 +1,48 @@
 package br.com.bg8.linguagensapi;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
 public class LinguagemController {
 
-    private List<Linguagem> linguagens =
-            List.of(
-                    new Linguagem("Java", "https://raw.githubusercontent.com/abrahamcalf/programming-languages-logos/master/src/java/java_256x256.png", 1),
-                    new Linguagem("PHP","https://raw.githubusercontent.com/abrahamcalf/programming-languages-logos/master/src/php/php_256x256.png",2 ),
-                    new Linguagem("C", "https://raw.githubusercontent.com/abrahamcalf/programming-languages-logos/master/src/c/c_256x256.png", 3)
-            );
+    @Autowired
+    private LinguagemRepository repositorio;
+
+
+    @PostMapping("/linguagens")
+    public Linguagem criarLinguagem(@RequestBody Linguagem linguagem){
+        return repositorio.save(linguagem);
+    }
 
     @GetMapping("/linguagens")
-    public List<Linguagem> obterLinguagens(){
-        //List<Linguagem> ;
-        return linguagens;
+    public List<Linguagem> lerLinguagem(){
+        return repositorio.findAll();
+    }
+
+    @GetMapping("linguagens/{id}")
+    public Linguagem lerLinguagemPorId(@PathVariable String id){
+        return repositorio.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    @PutMapping("linguagens/{id}")
+    public Linguagem atualizarLinguagem(@PathVariable String id, @RequestBody Linguagem linguagem){
+
+        if(!repositorio.existsById(id))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+        linguagem.setId(id);
+        return repositorio.save(linguagem);
+    }
+
+    @DeleteMapping("linguagens/{id}")
+    public void excluirLinguagem(@PathVariable String id){
+        repositorio.deleteById(id);
     }
 
 }
